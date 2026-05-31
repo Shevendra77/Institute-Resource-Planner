@@ -8,24 +8,24 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id") // Database column name same rahega
+    @Column(name = "user_id")
     private int userId;
 
-    @Column(name = "user_name") // Error fix: Ab JPA 'userName' ko pehchan lega
+    @Column(name = "user_name")
     private String userName;
 
-    @Column(name = "user_email")
+    // 🟢 Email ko unique kiya takki do users same email se register na kar sakein
+    @Column(name = "user_email", unique = true, nullable = false)
     private String userEmail;
 
-    @Column(name ="password")
-    private  String password;
+    // Password par unique nahi lagaya, isliye password same ho sakte hain
+    @Column(name ="password", nullable = false)
+    private String password;
 
     private String role;
 
-    // Default Constructor
     public User() {}
 
-    // Getters and Setters
     public int getUserId() {
         return userId;
     }
@@ -50,7 +50,6 @@ public class User {
         this.userEmail = userEmail;
     }
 
-
     public String getUserPassword() {
         return password;
     }
@@ -59,7 +58,6 @@ public class User {
         this.password = password;
     }
 
-
     public String getRole() {
         return role;
     }
@@ -67,8 +65,4 @@ public class User {
     public void setRole(String role) {
         this.role = role;
     }
-
-//    public Object getId() {
-//        return userId;
-//    }
 }

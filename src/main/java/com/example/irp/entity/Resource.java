@@ -4,7 +4,8 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "resources")
-public class Resource {
+public class Resource
+{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -12,15 +13,14 @@ public class Resource {
 
     private String resource_name;
     private String type;
-    private int quantity; // Ye aapka kul (Total) stock rahega
+    private int quantity;
     private String location;
     private String status;
 
-    // NAYI FIELD: Ye database mein column nahi banayegi
+    // This is not make a column in database
     @Transient
     private int availableQuantity;
 
-    // --- Aapke puraane saare Getters aur Setters waise hi rahenge ---
 
     public int getResource_id() { return resource_id; }
     public void setResource_id(int resource_id) { this.resource_id = resource_id; }
@@ -35,7 +35,6 @@ public class Resource {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
-    // NAYE GETTER AUR SETTER: Runtime calculation ke liye
     public int getAvailableQuantity() {
         return availableQuantity;
     }

@@ -2,93 +2,245 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Request Resource</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Resource | IRP System</title>
+    <!-- Same fonts and icons as My Requests page -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body{
-            background:#f4f6f9;
-            font-family:Arial;
-            background:linear-gradient(135deg,#1e3a8a,#06b6d4);
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { display: flex; background: #f8fafc; color: #1e293b; min-height: 100vh; }
 
-        .form-container{
-            width:400px;
-            margin:80px auto;
-            background:white;
-            padding:30px;
-            border-radius:12px;
-            box-shadow:0 4px 10px rgba(0,0,0,0.1);
+        /* Sidebar Design (Exact match) */
+        .sidebar {
+            width: 260px; background: #0f172a; color: white; padding: 30px 20px;
+            position: fixed; height: 100vh; display: flex; flex-direction: column; z-index: 100;
         }
+        .sidebar-brand { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; color: #fff; }
+        .sidebar-subtitle { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 40px; }
+        .menu { flex-grow: 1; }
+        .menu a { display: flex; align-items: center; padding: 12px 15px; margin-bottom: 8px; color: #94a3b8; text-decoration: none; border-radius: 10px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; }
+        .menu a:hover { color: white; background: rgba(255, 255, 255, 0.05); }
+        .menu a.active { background: #4f46e5; color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+        .sidebar-footer { border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px; }
+        .user-info { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .profile-circle { width: 40px; height: 40px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; }
+        .logout-btn { width: 100%; padding: 12px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #f87171; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .logout-btn:hover { background: #ef4444; color: white; }
 
-        input{
-            width:100%;
-            padding:10px;
-            margin-top:8px;
-            margin-bottom:15px;
-            border:1px solid #ccc;
-            border-radius:6px;
-        }
+        /* Workspace Main Panel */
+        .main { margin-left: 260px; padding: 40px; width: calc(100% - 260px); display: flex; justify-content: center; }
+        .container { background: #ffffff; padding: 32px; border-radius: 16px; box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); border: 1px solid #edf2f7; width: 100%; max-width: 600px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 2px solid #f1f5f9; padding-bottom: 16px; }
+        h2 { margin: 0; font-size: 24px; font-weight: 700; color: #0f172a; }
+        h2 i { color: #4f46e5; margin-right: 10px; }
 
-        button{
-            width:100%;
-            padding:12px;
-            background:#2a5298;
-            color:white;
-            border:none;
-            border-radius:8px;
-            cursor:pointer;
-        }
+        /* Modern Form Styling */
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        input { width: 100%; padding: 12px 16px; font-size: 14px; color: #1e293b; background-color: #fff; border: 1px solid #cbd5e1; border-radius: 8px; transition: all 0.2s ease; }
+        input:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15); }
 
-        button:hover{
-            background:#1e3c72;
-        }
+        button.submit-btn { width: 100%; padding: 14px; background: #4f46e5; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 15px; font-weight: 600; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25); transition: all 0.3s; margin-top: 10px; }
+        button.submit-btn:hover { background: #4338ca; transform: translateY(-1px); }
+        button.submit-btn:active { transform: translateY(0); }
 
-        /* 🔹 ERROR ALERT BOX STYLE */
-        .error-alert {
-            background-color: #fee2e2;
-            color: #b91c1c;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            border: 1px solid #fca5a5;
-            font-weight: bold;
-            line-height: 1.4;
-        }
+        /* Error Alert Box Style (Updated to match design system) */
+        .error-alert { background-color: #fee2e2; color: #b91c1c; padding: 14px 16px; border-radius: 8px; margin-bottom: 24px; font-size: 14px; border: 1px solid #fca5a5; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+
+
+        /* --- Fantastically Smooth Popup Styles --- */
+
+   .popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.4); /* Glass blur backdrop overlay */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+/* Active Class to trigger pop */
+.popup-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.popup-card {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    width: 90%;
+    max-width: 440px;
+    text-align: center;
+    transform: scale(0.8) translateY(20px);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.popup-overlay.active .popup-card {
+    transform: scale(1) translateY(0);
+}
+
+/* Icon Ripple Animation Design */
+.success-icon-box {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.success-circle {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #ecfdf5;
+    border-radius: 50%;
+    animation: scaleRipple 2s infinite ease-out;
+}
+
+.success-checkmark {
+    font-size: 36px;
+    color: #10b981;
+    font-weight: bold;
+    z-index: 2;
+    transform: scale(0);
+    animation: popIn 0.5s 0.2s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.popup-card h2 {
+    color: #0f172a;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.popup-card p {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 28px;
+}
+
+/* Sleek Primary Button */
+.popup-btn {
+    background: #4f46e5;
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+    transition: all 0.2s ease;
+}
+
+.popup-btn:hover {
+    background: #4338ca;
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+}
+
+/* Dynamic Animation Timelines */
+@keyframes scaleRipple {
+    0% { transform: scale(0.9); opacity: 1; }
+    50% { transform: scale(1.15); opacity: 0.4; }
+    100% { transform: scale(1.3); opacity: 0; }
+}
+
+@keyframes popIn {
+    to { transform: scale(1); }
+}
+
     </style>
 </head>
-
 <body>
 
-<div class="form-container">
-
-    <h2>Request Resource</h2>
-
-    <div th:if="${errorMessage}" class="error-alert" th:text="${errorMessage}">
-        Error Message Placeholder
+<!-- Same Sidebar Structure -->
+<aside class="sidebar">
+    <div class="sidebar-brand">Institute RP</div>
+    <div class="sidebar-subtitle">User Workspace</div>
+    <nav class="menu">
+        <!-- Active link shifted to View Resources since we are booking one -->
+        <a class="active" href="/user/dashboard">
+            <span style="margin-right:10px;">📦</span> View Resources
+        </a>
+        <a href="/user/dashboard">
+            <span style="margin-right:10px;">📝</span> My Requests
+        </a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="profile-circle">
+                <span th:text="${username != null ? username.substring(0,1).toUpperCase() : 'U'}">R</span>
+            </div>
+            <div style="overflow: hidden;">
+                <p style="font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${username}">ram</p>
+                <p style="font-size: 11px; color: #94a3b8;">Student/Faculty</p>
+            </div>
+        </div>
+        <form action="/logout" method="get">
+            <button class="logout-btn">Logout</button>
+        </form>
     </div>
+</aside>
 
-    <form th:action="@{/user/request}" method="post">
+<!-- Main Form Workspace -->
+<main class="main">
+    <div class="container">
+        <div class="header">
+            <h2><i class="fa-solid fa-calendar-plus"></i> Request Resource</h2>
+        </div>
 
-        <input type="hidden" name="resource_id" th:value="${resourceId}">
+        <!-- Error Box with clean alert look -->
+        <div th:if="${errorMessage}" class="error-alert">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span th:text="${errorMessage}">Error Message Placeholder</span>
+        </div>
 
-        <label>Quantity</label>
-        <input type="number" name="quantity" required>
+        <!-- Form fields and backend mappings remain exactly same -->
+        <form th:action="@{/user/request}" method="post">
 
-        <label>Start Time</label>
-        <input type="datetime-local" name="start_time" required>
+            <input type="hidden" name="resource_id" th:value="${resourceId}">
 
-        <label>End Time</label>
-        <input type="datetime-local" name="end_time" required>
+            <div class="form-group">
+                <label>Quantity</label>
+                <input type="number" name="quantity" required min="1">
+            </div>
 
-        <label>Reason</label>
-        <input type="text" name="reason" placeholder="Purpose of resource">
+            <div class="form-group">
+                <label>Start Time</label>
+                <input type="datetime-local" name="start_time" required>
+            </div>
 
-        <button type="submit">Submit Request</button>
+            <div class="form-group">
+                <label>End Time</label>
+                <input type="datetime-local" name="end_time" required>
+            </div>
 
-    </form>
+            <div class="form-group">
+                <label>Reason / Purpose</label>
+                <input type="text" name="reason" placeholder="E.g., Lab Experiment, Seminar Event">
+            </div>
 
-</div>
+            <button type="submit" class="submit-btn">Submit Request</button>
+
+        </form>
+    </div>
+</main>
 
 </body>
 </html>

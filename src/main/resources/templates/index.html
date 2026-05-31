@@ -1,177 +1,607 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta http-equiv="CONTENT-TYPE" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Institute Resource Planner</title>
+
     <style>
-        *{ margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
+        /* ================= SUCCESS POPUP ================= */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* 🟢 background ko transparent (rgba(0,0,0,0)) kar diya */
+    background: transparent !important;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    /* 🟢 backdrop-filter ko remove kar diya taaki blur hat jaye */
+    backdrop-filter: none !important;
+}
+        *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+        font-family:'Segoe UI', sans-serif;
+        }
 
         body{
-            height:100vh; overflow:hidden;
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
-                        url('https://images.unsplash.com/photo-1580587771525-78b9dba3b914');
-            background-size:cover; background-position:center; color:white;
+        height:100vh;
+        overflow:hidden;
+        color:white;
         }
 
-        .center{ height:100vh; display:flex; justify-content:center; align-items:center; flex-direction:column; text-align:center; }
-        .page{ display:none; height:100vh; justify-content:center; align-items:center; }
+        /* ================= VIDEO BACKGROUND ================= */
 
-        /* HOME STYLES */
-        .title{font-size:55px;font-weight:700;}
-        #typing{color:#22c55e;}
-        .subtitle{margin-top:15px;font-size:18px;}
-        .cursor{ width:3px;height:40px;background:#22c55e; display:inline-block;animation:blink .7s infinite; }
-        @keyframes blink{50%{opacity:0;}}
-
-        /* BUTTONS & CARDS */
-        .btn{ padding:14px 30px; margin:10px; border-radius:10px; cursor:pointer; font-size:18px; font-weight:600; }
-        .btn-primary{ background:#0ea5e9; color:white; border:none; }
-        .btn-outline{ background:transparent; border:2px solid white; color:white; }
-
-        .card{ background:#f1f5f9; padding:30px; border-radius:25px; width:380px; text-align:center; color:black; }
-        .logo{ font-size:28px; font-weight:700; color:#2563eb; }
-        .logo span{color:#22c55e;}
-        .sub{ font-size:14px; color:#555; margin-bottom:20px; }
-        .input{ width:100%; padding:12px; margin-bottom:15px; border:none; border-radius:12px; background:#e2e8f0; }
-        .action{ width:100%; padding:12px; border:none; border-radius:12px; background:linear-gradient(90deg,#1d4ed8,#06b6d4); color:white; font-weight:600; cursor:pointer; }
-        .link{ margin-top:15px; font-size:14px; }
-        .link span{ color:#2563eb; cursor:pointer; }
-        .close{ margin-top:15px; width:100%; padding:10px; border-radius:12px; border:2px solid #2563eb; background:none; color:#2563eb; cursor:pointer; }
-
-        /* ================= POPUP STYLES ================= */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            display: none; /* Hidden by default */
-            justify-content: center; align-items: center;
-            z-index: 9999;
-            backdrop-filter: blur(8px);
+        .video-bg{
+        position:fixed;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        object-fit:cover;
+        z-index:-2;
         }
 
-        .success-modal {
-            background: white; padding: 40px; border-radius: 30px;
-            text-align: center; color: black; width: 380px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        .overlay{
+        position:fixed;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        background:rgba(0,0,0,0.65);
+        z-index:-1;
         }
 
-        .check-circle {
-            width: 80px; height: 80px; background: #22c55e;
-            border-radius: 50%; display: flex; justify-content: center;
-            align-items: center; margin: 0 auto 20px; color: white; font-size: 45px;
+        /* ================= COMMON PAGE ================= */
+
+        .center{
+        height:100vh;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        flex-direction:column;
+        text-align:center;
+        padding:20px;
         }
 
-        @keyframes popIn {
-            from { transform: scale(0.7); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+        .page{
+        display:none;
+        height:100vh;
+        justify-content:center;
+        align-items:center;
+        }
+
+        /* ================= HOME PAGE ================= */
+
+        .title{
+        font-size:60px;
+        font-weight:700;
+        }
+
+        #typing{
+        color:#22c55e;
+        }
+
+        .cursor{
+        display:inline-block;
+        width:3px;
+        height:42px;
+        background:#22c55e;
+        margin-left:5px;
+        animation:blink .7s infinite;
+        }
+
+        @keyframes blink{
+        50%{opacity:0;}
+        }
+
+        .subtitle{
+        margin-top:15px;
+        font-size:18px;
+        color:#e5e7eb;
+        max-width:750px;
+        line-height:1.6;
+        }
+
+        .buttons{
+        margin-top:40px;
+        display:flex;
+        gap:20px;
+        flex-wrap:wrap;
+        justify-content:center;
+        }
+
+        .btn{
+        padding:14px 30px;
+        border-radius:12px;
+        cursor:pointer;
+        font-size:18px;
+        font-weight:600;
+        transition:0.3s;
+        }
+
+        .btn-primary{
+        background:#0ea5e9;
+        border:none;
+        color:white;
+        }
+
+        .btn-primary:hover{
+        background:#0284c7;
+        transform:translateY(-3px);
+        }
+
+        .btn-outline{
+        background:transparent;
+        border:2px solid white;
+        color:white;
+        }
+
+        .btn-outline:hover{
+        background:white;
+        color:#111827;
+        transform:translateY(-3px);
+        }
+
+        /* ================= LOGIN / REGISTER CARD ================= */
+
+        .card{
+        background:rgba(255,255,255,0.95);
+        backdrop-filter:blur(10px);
+        padding:35px;
+        border-radius:25px;
+        width:400px;
+        text-align:center;
+        color:black;
+        box-shadow:0 20px 40px rgba(0,0,0,0.4);
+        animation:fadeIn .4s ease;
+        }
+
+        @keyframes fadeIn{
+        from{
+        opacity:0;
+        transform:translateY(20px);
+        }
+        to{
+        opacity:1;
+        transform:translateY(0);
+        }
+        }
+
+        .logo{
+        font-size:30px;
+        font-weight:700;
+        color:#2563eb;
+        }
+
+        .logo span{
+        color:#22c55e;
+        }
+
+        .sub{
+        font-size:14px;
+        color:#666;
+        margin-bottom:20px;
+        }
+
+        .input{
+        width:100%;
+        padding:14px;
+        margin-bottom:15px;
+        border:none;
+        border-radius:12px;
+        background:#e2e8f0;
+        outline:none;
+        font-size:15px;
+        }
+
+        .input:focus{
+        border:2px solid #0ea5e9;
+        background:white;
+        }
+
+        .action{
+        width:100%;
+        padding:14px;
+        border:none;
+        border-radius:12px;
+        background:linear-gradient(90deg,#2563eb,#06b6d4);
+        color:white;
+        font-size:16px;
+        font-weight:600;
+        cursor:pointer;
+        transition:0.3s;
+        }
+
+        .action:hover{
+        transform:translateY(-2px);
+        opacity:0.95;
+        }
+
+        .link{
+        margin-top:15px;
+        font-size:14px;
+        color:#555;
+        }
+
+        .link span{
+        color:#2563eb;
+        cursor:pointer;
+        font-weight:600;
+        }
+
+        .close{
+        margin-top:15px;
+        width:100%;
+        padding:12px;
+        border-radius:12px;
+        border:2px solid #2563eb;
+        background:none;
+        color:#2563eb;
+        font-weight:600;
+        cursor:pointer;
+        transition:0.3s;
+        }
+
+        .close:hover{
+        background:#2563eb;
+        color:white;
+        }
+
+        /* ================= SUCCESS POPUP ================= */
+
+        .modal-overlay{
+        position:fixed;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        background:rgba(0,0,0,0.85);
+        display:none;
+        justify-content:center;
+        align-items:center;
+        z-index:9999;
+        backdrop-filter:blur(8px);
+        }
+
+        .success-modal{
+        background:white;
+        padding:40px;
+        border-radius:30px;
+        text-align:center;
+        color:black;
+        width:380px;
+        box-shadow:0 25px 50px rgba(0,0,0,0.5);
+        animation:popIn .4s cubic-bezier(0.175,0.885,0.32,1.275);
+        }
+
+        .check-circle{
+        width:80px;
+        height:80px;
+        background:#22c55e;
+        border-radius:50%;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        margin:0 auto 20px;
+        color:white;
+        font-size:45px;
+        }
+
+        @keyframes popIn{
+        from{
+        transform:scale(0.7);
+        opacity:0;
+        }
+        to{
+        transform:scale(1);
+        opacity:1;
+        }
+        }
+
+        /* ================= RESPONSIVE ================= */
+
+        @media(max-width:600px){
+
+        .title{
+        font-size:38px;
+        }
+
+        .subtitle{
+        font-size:15px;
+        }
+
+        .card{
+        width:90%;
+        }
+
+        .buttons{
+        flex-direction:column;
+        }
+
+        .btn{
+        width:100%;
+        }
         }
     </style>
 </head>
 
 <body>
 
-<!-- HOME SECTION -->
+<!-- VIDEO --><!-- VIDEO -->
+<video class="video-bg" autoplay muted loop playsinline>
+    <source src="/videos/campus.mp4" type="video/mp4">
+</video>
+
+<div class="overlay"></div>
+
+<!-- ================= HOME ================= -->
+
 <div id="home" class="center">
-    <h1 class="title">Institute <span id="typing"></span><span class="cursor"></span></h1>
-    <p class="subtitle">Smart solution to manage classrooms, faculty, labs and resources</p>
-    <div>
+
+    <h1 class="title">
+        Institute <span id="typing"></span><span class="cursor"></span>
+    </h1>
+
+    <p class="subtitle">
+        A modern platform for managing computers, routers, CPUs, tables and institutional equipment.<br>
+        Helps organizations efficiently track, allocate and maintain resources.
+    </p>
+    <div class="buttons">
         <button class="btn btn-primary" onclick="openLogin()">Login User</button>
         <button class="btn btn-outline" onclick="openRegister()">New User Registration</button>
     </div>
+
 </div>
 
-<!-- LOGIN SECTION -->
+<!-- ================= LOGIN ================= -->
+
 <div id="loginPage" class="page center">
+
     <div class="card">
-        <div class="logo">Institute<span>Resourse</span></span> <span>_Planner</span></div>
-        <div class="sub">Resource Management System</div>
+
+        <div class="logo">
+            Institute <span>_Planner</span>
+        </div>
+
+        <div class="sub">
+            Resource Management System
+        </div>
+
         <h2>Welcome Back</h2>
+
         <p class="sub">Login to continue</p>
+
         <form action="/login" method="post">
-            <input type="email" name="user_email" placeholder="Email Address" class="input" required>
-            <input type="password" name="password" placeholder="Password" class="input" required>
-            <button class="action">Login</button>
+
+            <input type="email"
+                   name="user_email"
+                   placeholder="Email Address"
+                   class="input"
+                   required>
+
+            <input type="password"
+                   name="password"
+                   placeholder="Password"
+                   class="input"
+                   required>
+
+            <button class="action">
+                Login
+            </button>
+
         </form>
-        <div class="link">Don't have an account? <span onclick="openRegister()">Sign up here</span></div>
-        <button class="close" onclick="goHome()">Close</button>
+
+        <div class="link">
+            Don't have an account?
+            <span onclick="openRegister()">Sign up here</span>
+        </div>
+
+        <button class="close" onclick="goHome()">
+            Close
+        </button>
+
     </div>
+
 </div>
 
-<!-- REGISTER SECTION -->
+<!-- ================= REGISTER ================= -->
+
+
 <div id="registerPage" class="page center">
+
     <div class="card">
-        <div class="logo">Institute <span>_Planner</span></div>
-        <div class="sub">Resource Management System</div>
-        <h2>New User Registration</h2>
+
+        <div class="logo">
+            Institute <span>_Planner</span>
+        </div>
+
+        <div class="sub">
+            Resource Management System
+        </div>
+
+        <h2>Create Account</h2>
+
+        <p class="sub">Register to continue</p>
+
+        <div th:if="${error}" style="color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px; border-radius: 4px; font-size: 14px; text-align: center; font-weight: bold;">
+            <span th:text="${error}"></span>
+        </div>
+
         <form action="/register" method="post">
-            <input type="text" name="user_name" placeholder="Enter your name" required class="input">
-            <input type="email" name="user_email" placeholder="Enter email" required class="input">
-            <input type="password" name="password" placeholder="Create password" required class="input">
-            <button type="submit" class="action">Register</button>
+
+            <input type="text"
+                   name="user_name"
+                   placeholder="Enter your name"
+                   required
+                   class="input">
+
+            <input type="email"
+                   name="user_email"
+                   placeholder="Enter email"
+                   required
+                   class="input">
+
+            <input type="password"
+                   name="password"
+                   placeholder="Create password"
+                   required
+                   class="input">
+
+            <button type="submit" class="action">
+                Register
+            </button>
+
         </form>
-        <div class="link">Already have an account? <span onclick="openLogin()">Login here</span></div>
-        <button class="close" onclick="goHome()">Back</button>
+
+        <div class="link">
+            Already have an account?
+            <span onclick="openLogin()">Login here</span>
+        </div>
+
+        <button class="close" onclick="goHome()">
+            Back
+        </button>
+
     </div>
+
 </div>
 
-<!-- SUCCESS POPUP MODAL -->
+<!-- ================= SUCCESS POPUP ================= -->
+
 <div class="modal-overlay" id="successPopup">
+
     <div class="success-modal">
-        <div class="check-circle">✓</div>
-        <h2 style="color: #1d4ed8;">Success!</h2>
-        <p style="margin: 15px 0; color: #555; font-size: 16px;">
-            Your account was created successfully.<br>You can now log in.
+
+        <div class="check-circle">
+            ✓
+        </div>
+
+        <h2 style="color:#2563eb;">
+            Success!
+        </h2>
+
+        <p style="margin:15px 0;color:#555;font-size:16px;">
+            Your account was created successfully.<br>
+            You can now log in.
         </p>
-        <button class="action" onclick="closePopupAndLogin()">Continue to Login</button>
+
+        <button class="action" onclick="closePopupAndLogin()">
+            Continue to Login
+        </button>
+
     </div>
+
 </div>
 
 <script>
-    /* --- TYPING EFFECT --- */
+
+    /* ================= TYPING EFFECT ================= */
+
     const text = "Resource Planner";
-    let idx = 0, isDeleting = false;
-    function typeEffect() {
-        let t = document.getElementById("typing");
-        if(!t) return;
-        t.innerHTML = isDeleting ? text.substring(0, idx--) : text.substring(0, idx++);
-        if (!isDeleting && idx > text.length) { isDeleting = true; setTimeout(typeEffect, 1500); }
-        else if (isDeleting && idx < 0) { isDeleting = false; setTimeout(typeEffect, 500); }
-        else { setTimeout(typeEffect, isDeleting ? 60 : 100); }
+
+    let idx = 0;
+    let isDeleting = false;
+
+    function typeEffect(){
+
+    let t = document.getElementById("typing");
+
+    if(!isDeleting){
+    t.innerHTML = text.substring(0, idx + 1);
+    idx++;
+
+    if(idx === text.length){
+    isDeleting = true;
+    setTimeout(typeEffect, 1200);
+    return;
     }
+    }
+    else{
+
+    t.innerHTML = text.substring(0, idx - 1);
+    idx--;
+
+    if(idx === 0){
+    isDeleting = false;
+    }
+    }
+
+    setTimeout(typeEffect, isDeleting ? 50 : 100);
+    }
+
     typeEffect();
 
-    /* --- NAVIGATION --- */
-    function hideAll(){
-        document.getElementById("home").style.display="none";
-        document.getElementById("loginPage").style.display="none";
-        document.getElementById("registerPage").style.display="none";
-    }
-    function openLogin(){ hideAll(); document.getElementById("loginPage").style.display="flex"; }
-    function openRegister(){ hideAll(); document.getElementById("registerPage").style.display="flex"; }
-    function goHome(){ hideAll(); document.getElementById("home").style.display="flex"; }
+    /* ================= NAVIGATION ================= */
 
-    function closePopupAndLogin() {
-        document.getElementById("successPopup").style.display = "none";
+    function hideAll(){
+
+    document.getElementById("home").style.display = "none";
+    document.getElementById("loginPage").style.display = "none";
+    document.getElementById("registerPage").style.display = "none";
+
+    }
+
+    function openLogin(){
+
+    hideAll();
+    document.getElementById("loginPage").style.display = "flex";
+
+    }
+
+    function openRegister(){
+
+    hideAll();
+    document.getElementById("registerPage").style.display = "flex";
+
+    }
+
+    function goHome(){
+
+    hideAll();
+    document.getElementById("home").style.display = "flex";
+
+    }
+
+    function closePopupAndLogin(){
+
+    document.getElementById("successPopup").style.display = "none";
+    openLogin();
+
+    }
+
+    /* ================= LOAD LOGIC ================= */
+
+   window.onload = function(){
+
+    const params = new URLSearchParams(window.location.search);
+
+    // 1. Success Registration: Popup dikhayein
+    if(params.get("registered") === "true"){
+        goHome();
+        document.getElementById("successPopup").style.display = "flex";
+    }
+    // 2. 🟢 Error: Agar email exist karta hai, toh Register page wapas kholne ke liye
+    else if(params.get("error") === "email_exists"){
+        openRegister();
+    }
+    // 3. Login Page: Login mode mein open karein
+    else if(params.get("login") === "true"){
         openLogin();
     }
-
-    /* --- LOAD LOGIC (Triggers Popup) --- */
-    window.onload = function () {
-        const params = new URLSearchParams(window.location.search);
-
-        // Check if backend added ?registered=true to the URL
-        if(params.get("registered") === "true") {
-            goHome(); // Keep home in background
-            document.getElementById("successPopup").style.display = "flex";
-        }
-        else if(params.get("login") === "true"){
-            openLogin();
-        }
-        else {
-            goHome();
-        }
+    // 4. Default: Home page par rakhein
+    else{
+        goHome();
     }
+
+};
+
 </script>
+
 </body>
 </html>

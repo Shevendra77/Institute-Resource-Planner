@@ -3,136 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Resource</title>
+    <title>Edit Resource | Admin Control Center</title>
+    <!-- Synced to use Inter font family -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-
-        *{
-        margin:0;
-        padding:0;
-        box-sizing:border-box;
-        font-family:Arial, Helvetica, sans-serif;
+        /* Exact Design System Tokens from Main Dashboard & Add Page */
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --sidebar-bg: #0f172a;
+            --bg-body: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --danger: #ef4444;
+            --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
         }
 
-        body{
-        min-height:100vh;
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        background:linear-gradient(135deg,#1e3a8a,#06b6d4);
-        padding:20px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
         }
 
-        /* Card */
-        .card{
-        background:white;
-        padding:35px;
-        width:420px;
-        max-width:100%;
-        border-radius:14px;
-        box-shadow:0 12px 35px rgba(0,0,0,0.25);
-        animation:fadeIn 0.5s ease;
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
         }
 
-        @keyframes fadeIn{
-        from{
-        opacity:0;
-        transform:translateY(20px);
-        }
-        to{
-        opacity:1;
-        transform:translateY(0);
-        }
-        }
-
-        h2{
-        text-align:center;
-        margin-bottom:20px;
-        color:#111827;
+        /* --- Fixed Sidebar (Synced perfectly) --- */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            color: white;
+            padding: 30px 20px;
+            position: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
         }
 
-        /* Inputs */
-        input, select{
-        width:100%;
-        padding:12px;
-        margin-top:12px;
-        border:1px solid #d1d5db;
-        border-radius:8px;
-        font-size:14px;
-        transition:0.2s;
+        .sidebar-brand {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 5px;
         }
 
-        input:focus, select:focus{
-        outline:none;
-        border-color:#2563eb;
-        box-shadow:0 0 0 2px rgba(37,99,235,0.15);
+        .sidebar-subtitle {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #94a3b8;
+            margin-bottom: 40px;
         }
 
-        /* Button */
-        button{
-        width:100%;
-        padding:12px;
-        margin-top:18px;
-        background:#2563eb;
-        color:white;
-        border:none;
-        border-radius:8px;
-        font-size:15px;
-        font-weight:600;
-        cursor:pointer;
-        transition:0.2s;
+        .menu { flex-grow: 1; }
+
+        .menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
         }
 
-        button:hover{
-        background:#1e40af;
+        .menu a:hover { color: white; background: rgba(255, 255, 255, 0.05); }
+        .menu a.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+
+        .admin-profile { background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align: center; }
+        .admin-name { font-size: 14px; font-weight: 600; color: white; }
+
+        .logout-btn { width: 100%; padding: 12px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.2); color: #f87171; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .logout-btn:hover { background: var(--danger); color: white; }
+
+       /* --- Main App Container (Updated for perfect centering) --- */
+.main {
+    margin-left: 260px; /* Sidebar ke liye space left me chodi */
+    padding: 40px;
+    width: calc(100% - 260px);
+    min-height: 100vh;
+
+    /* Centering logic using flexbox */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Vertically (updown) center karne ke liye */
+    align-items: center;     /* Horizontally (leftright) center karne ke liye */
+}
+
+/* --- Header Section (Title alignment over centered card) --- */
+.header {
+    margin-bottom: 30px;
+    width: 100%;
+    max-width: 650px; /* Card ki width ke barabar block kiya jisse left me aligned rahe */
+    text-align: left;
+}
+
+/* --- Form Card Box --- */
+.form-card {
+    background: white;
+    padding: 35px;
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid #f1f5f9;
+    width: 100%;
+    max-width: 650px; /* Standard visible width across monitors */
+}
+
+        .form-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        /* Mobile */
-        @media(max-width:500px){
-        .card{
-        padding:25px;
-        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
 
+        .form-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--text-main);
+            outline: none;
+            background-color: #f8fafc;
+            transition: all 0.2s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+            background-color: #ffffff;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
     </style>
-
 </head>
 <body>
 
-<div class="card">
+<!-- Shared Sidebar Component with Dynamic Admin Username -->
+<aside class="sidebar">
+    <div class="sidebar-brand">Institute RP</div>
+    <div class="sidebar-subtitle">Admin Control Center</div>
+    <nav class="menu">
+        <a href="/admin/dashboard">
+            <span style="margin-right:10px;">📊</span> Dashboard
+        </a>
+        <a class="active" href="/admin/dashboardmain">
+            <span style="margin-right:10px;">📦</span> Resources
+        </a>
+        <a href="/admin/admin-request">
+            <span style="margin-right:10px;">📩</span> Requests
+        </a>
+    </nav>
 
-    <h2>Edit Resource</h2>
+    <div class="admin-profile">
+        <p style="font-size: 11px; color: #94a3b8; margin-bottom: 4px;">Logged in as</p>
+        <div class="admin-name" th:text="${username}">Administrator</div>
+    </div>
+    <div class="logout">
+        <form action="/logout" method="get">
+            <button class="logout-btn">System Logout</button>
+        </form>
+    </div>
+</aside>
 
-    <form action="/admin/update-resource" method="post">
+<!-- Main Container Area -->
+<main class="main">
+    <header class="header">
+        <h1>Edit Resource</h1>
+        <p style="color: var(--text-muted); font-size: 14px;">Modify the existing infrastructure asset configuration details below.</p>
+    </header>
 
-        <input type="hidden" name="resource_id" th:value="${resource.resource_id}">
+    <div class="form-card">
+        <!-- Form mapping and dynamic Thymeleaf values remain completely unaltered -->
+        <form th:action="@{/admin/update-resource}" method="post" class="form-grid">
 
-        <input type="text" name="resource_name"
-               th:value="${resource.resource_name}"
-               placeholder="Resource Name" required>
+            <input type="hidden" name="resource_id" th:value="${resource.resource_id}">
 
-        <input type="text" name="type"
-               th:value="${resource.type}"
-               placeholder="Resource Type" required>
+            <div class="form-group">
+                <label>Resource Name</label>
+                <input type="text" name="resource_name" th:value="${resource.resource_name}" placeholder="Resource Name" required>
+            </div>
 
-        <input type="number" name="quantity"
-               th:value="${resource.quantity}"
-               placeholder="Quantity" required>
+            <div class="form-group">
+                <label>Resource Type</label>
+                <input type="text" name="type" th:value="${resource.type}" placeholder="Resource Type" required>
+            </div>
 
-        <select name="status">
-            <option value="Available" th:selected="${resource.status == 'Available'}">Available</option>
-            <option value="Not Available" th:selected="${resource.status == 'Not Available'}">Not Available</option>
-        </select>
+            <div class="form-group">
+                <label>Quantity</label>
+                <input type="number" name="quantity" th:value="${resource.quantity}" placeholder="Quantity" required>
+            </div>
 
-        <input type="text" name="location"
-               th:value="${resource.location}"
-               placeholder="Location" required>
+            <div class="form-group">
+                <label>Status</label>
+                <select name="status">
+                    <option value="Available" th:selected="${resource.status == 'Available'}">Available</option>
+                    <option value="Not Available" th:selected="${resource.status == 'Not Available'}">Maintenance</option>
+                </select>
+            </div>
 
-        <button type="submit">Update Resource</button>
+            <div class="form-group">
+                <label>Location</label>
+                <input type="text" name="location" th:value="${resource.location}" placeholder="Location" required>
+            </div>
 
-    </form>
+            <button type="submit" class="submit-btn">Update Resource</button>
 
-</div>
+        </form>
+    </div>
+</main>
 
 </body>
 </html>

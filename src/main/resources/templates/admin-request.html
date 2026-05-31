@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Allocation Requests | Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
         :root {
@@ -36,22 +37,50 @@
         .logout-btn:hover { background: var(--danger); color: white; }
 
         .main { margin-left: 260px; padding: 40px; width: calc(100% - 260px); }
-        .header-section { margin-bottom: 35px; }
+
+        /* 🎨 Enhanced Header Section with Flexbox Alignment */
+        .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; }
         .header-section h1 { font-size: 28px; font-weight: 700; color: #0f172a; }
-        .table-container { background: white; padding: 25px; border-radius: 16px; box-shadow: var(--card-shadow); border: 1px solid #f1f5f9; }
+
+        /* 📄 Premium PDF Download Button Styling */
+        .pdf-download-btn { background: var(--sidebar-bg); color: white; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; box-shadow: var(--card-shadow); transition: all 0.2s ease; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .pdf-download-btn:hover { background: var(--primary); transform: translateY(-1px); box-shadow: 0 6px 15px rgba(79, 70, 229, 0.2); }
+        .pdf-download-btn i { color: #ef4444; font-size: 15px; }
+
+        .table-container { background: white; padding: 25px; border-radius: 16px; box-shadow: var(--card-shadow); border: 1px solid #f1f5f9; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
         th { padding: 16px; font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); text-align: left; border-bottom: 2px solid #edf2f7; }
-        td { padding: 16px; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
+        td { padding: 16px; font-size: 14px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
 
-        .status { padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .status { padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; display: inline-block; }
         .approved { background: #dcfce7; color: #166534; }
         .pending { background: #fef3c7; color: #d97706; }
         .rejected { background: #fee2e2; color: #991b1b; }
         .pending-delivery { background: #e0f2fe; color: var(--info); }
+        .pending-return { background: #ffedf5; color: #b91c1c; }
+        .overdue-alert { background: #fef2f2; color: #ef4444; border: 1px dashed #f87171; animation: pulse 2s infinite; }
+        .issued-status { background: #e0e7ff; color: #4338ca; }
 
-        .btn { padding: 8px 14px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+
+        .btn { padding: 8px 14px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 4px; }
         .approve { background: #22c55e; color: white; }
+        .approve:hover { background: #16a34a; }
         .reject { background: #ef4444; color: white; }
+        .reject:hover { background: #dc2626; }
+        .clear-fine-btn { background: #10b981; color: white; }
+        .clear-fine-btn:hover { background: #059669; }
+
+        .fine-badge { font-weight: 700; color: #ef4444; background: #fef2f2; padding: 4px 8px; border-radius: 4px; border: 1px solid #fee2e2; }
+        .no-fine { color: #94a3b8; font-style: italic; font-size: 13px; }
+
+        /* New DateTime Range Flex Layout for Admin */
+        .admin-datetime-range { display: flex; align-items: center; gap: 6px; font-weight: 500; color: #334155; white-space: nowrap; }
+        .admin-datetime-arrow { color: var(--primary); font-weight: 700; font-size: 15px; }
     </style>
 </head>
 
@@ -74,44 +103,109 @@
 <main class="main">
     <div class="header-section">
         <h1>All Allocation Requests</h1>
+        <a href="/admin/report/download-pdf" class="pdf-download-btn">
+            <i class="fa-solid fa-file-pdf"></i> Download PDF Report
+        </a>
     </div>
 
     <div class="table-container">
         <table>
             <thead>
-            <tr><th>User Name</th><th>Resource ID</th><th>Resource Name</th><th>Qty</th><th>Date & Time</th><th>Reason</th><th>Status</th><th style="text-align: center;">Action</th></tr>
+            <tr>
+                <th>User Name</th>
+                <th>Resource ID</th>
+                <th>Resource Name</th>
+                <th>Qty</th>
+                <th>Date & Time Range</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Fine Amount</th>
+                <th style="text-align: center;">Action</th>
+            </tr>
             </thead>
             <tbody>
             <tr th:each="a : ${requests}">
-                <td th:text="${a.userName}" style="font-weight:600;"></td>
+                <td th:text="${a.user != null ? a.user.userName : 'Unknown User'}" style="font-weight:600;"></td>
+
                 <td th:text="${a.resourceId}"></td>
-                <td th:text="${a.resourceName}"></td>
+
+                <td th:text="${a.resource != null ? a.resource.resource_name : 'N/A'}"></td>
+
                 <td th:text="${a.quantity}"></td>
-                <td th:text="${a.dateTime}"></td>
+
+                <td>
+                    <div class="admin-datetime-range">
+                        <span th:text="${a.startTime != null ? #temporals.format(a.startTime, 'MMM dd, HH:mm') : 'N/A'}">May 30, 16:31</span>
+                        <span class="admin-datetime-arrow">→</span>
+                        <span th:text="${a.endTime != null ? #temporals.format(a.endTime, 'MMM dd, HH:mm') : 'N/A'}">May 30, 17:31</span>
+                    </div>
+                </td>
+
                 <td th:text="${a.reason}"></td>
+
                 <td>
                     <span th:text="${a.status}"
                           th:classappend="
-                            ${a.status == 'Approved' || a.status == 'APPROVED'} ? 'status approved' :
-                            (${a.status == 'Rejected' || a.status == 'REJECTED'} ? 'status rejected' :
-                            (${a.status == 'APPROVED_PENDING_DELIVERY'} ? 'status pending-delivery' : 'status pending'))">
+                            ${a.status == 'Approved' || a.status == 'APPROVED' || a.status == 'RETURNED'} ? 'status approved' :
+                            (${a.status == 'Rejected' || a.status == 'REJECTED' || a.status == 'REJECTED_BY_USER'} ? 'status rejected' :
+                            (${a.status == 'APPROVED_PENDING_DELIVERY'} ? 'status pending-delivery' :
+                            (${a.status == 'RETURN_PENDING_ADMIN'} ? 'status pending-return' :
+                            (${a.status == 'OVERDUE'} ? 'status overdue-alert' :
+                            (${a.status == 'ISSUED'} ? 'status issued-status' : 'status pending')))))">
                     </span>
                 </td>
+
+                <td>
+                    <span th:if="${a.fineAmount != null && a.fineAmount > 0}" class="fine-badge" th:text="'₹' + ${a.fineAmount}">₹0.0</span>
+                    <span th:unless="${a.fineAmount != null && a.fineAmount > 0}" class="no-fine">₹0.0</span>
+                </td>
+
                 <td style="text-align: center;">
                     <div th:if="${a.status == 'Pending' || a.status == 'PENDING'}" style="display: flex; gap: 6px; justify-content: center;">
                         <form th:action="@{/admin/request/approve}" method="POST" style="margin: 0;">
                             <input type="hidden" name="id" th:value="${a.id}" />
-                            <button type="submit" class="btn approve">Approve</button>
+                            <button type="submit" class="btn approve"><i class="fa-solid fa-check"></i> Approve</button>
                         </form>
                         <form th:action="@{/admin/request/reject}" method="POST" style="margin: 0;">
                             <input type="hidden" name="id" th:value="${a.id}" />
-                            <button type="submit" class="btn reject">Reject</button>
+                            <button type="submit" class="btn reject"><i class="fa-solid fa-xmark"></i> Reject</button>
                         </form>
                     </div>
+
                     <div th:if="${a.status == 'APPROVED_PENDING_DELIVERY'}">
-                        <span style="color: var(--info); font-size: 12px; font-weight: 600;">Waiting for User</span>
+                        <span style="color: var(--info); font-size: 12px; font-weight: 600;"><i class="fa-solid fa-clock"></i> Waiting for User</span>
                     </div>
-                    <div th:if="${a.status != 'Pending' && a.status != 'PENDING' && a.status != 'APPROVED_PENDING_DELIVERY'}">
+
+                    <div style="display: flex; flex-direction: column; gap: 6px; align-items: center; justify-content: center;">
+
+                        <div th:if="${a.status == 'RETURN_PENDING_ADMIN'}" style="display: flex; gap: 6px; justify-content: center;">
+                            <form th:action="@{/admin/request/verify-return-yes}" method="POST" style="margin: 0;">
+                                <input type="hidden" name="id" th:value="${a.id}" />
+                                <button type="submit" class="btn approve"><i class="fa-solid fa-square-check"></i> Verify Return</button>
+                            </form>
+                            <form th:action="@{/admin/request/verify-return-no}" method="POST" style="margin: 0;">
+                                <input type="hidden" name="id" th:value="${a.id}" />
+                                <button type="submit" class="btn reject"><i class="fa-solid fa-ban"></i> Reject</button>
+                            </form>
+                        </div>
+
+                        <div th:if="${a.fineAmount != null && a.fineAmount > 0}" style="margin-top: 2px;">
+                            <form th:action="@{/admin/request/clear-fine}" method="POST" style="margin: 0;">
+                                <input type="hidden" name="id" th:value="${a.id}" />
+                                <button type="submit" class="btn clear-fine-btn"><i class="fa-solid fa-hand-holding-dollar"></i> Clear Fine</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div th:if="${a.status == 'ISSUED' && (a.fineAmount == null || a.fineAmount == 0)}">
+                        <span style="color: var(--primary); font-size: 13px; font-weight: 500;"><i class="fa-solid fa-handshake"></i> Active In-Use</span>
+                    </div>
+
+                    <div th:if="${a.status == 'OVERDUE' && (a.fineAmount == null || a.fineAmount == 0)}">
+                        <span style="color: var(--danger); font-size: 12px; font-weight: 700;"><i class="fa-solid fa-triangle-exclamation"></i> OVERDUE (Awaiting Return)</span>
+                    </div>
+
+                    <div th:if="${a.status != 'Pending' && a.status != 'PENDING' && a.status != 'APPROVED_PENDING_DELIVERY' && a.status != 'RETURN_PENDING_ADMIN' && (a.fineAmount == null || a.fineAmount == 0) && a.status != 'ISSUED' && a.status != 'OVERDUE'}">
                         <span style="color: var(--text-muted); font-size: 13px; font-style: italic;">No Action Required</span>
                     </div>
                 </td>

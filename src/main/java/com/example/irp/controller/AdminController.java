@@ -6,16 +6,17 @@ import com.example.irp.repository.AllocationRepository;
 import com.example.irp.repository.ResourceRepository;
 import com.example.irp.repository.UserRepository;
 import com.example.irp.service.EmailService;
+import com.example.irp.service.PdfReportService;
+import com.example.irp.service.SmsService; // 🟢 Import added
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -35,7 +36,13 @@ public class AdminController {
     @Autowired
     private EmailService emailService;
 
-    // 1. Admin Analytics Dashboard (Fixed: Correct Live Stock tracking & Status overrides)
+    @Autowired
+    private PdfReportService pdfReportService;
+
+    @Autowired // 🟢 SmsService injected for Twilio SMS
+    private SmsService smsService;
+
+    // 1. Admin Analytics Dashboard
     @GetMapping("/dashboard")
     public String adminDashboard(HttpSession session, Model model) {
         String username = (String) session.getAttribute("username");
@@ -47,16 +54,14 @@ public class AdminController {
         long notAvailableResources = 0;
 
         for (Resource res : resources) {
-            // ⭐ Loop chalakar individual strict live quantity nikalein
             int bookedQty = allocationRepository.getBookedQuantityByResourceId(res.getResource_id());
             int calculatedAvailable = res.getQuantity() - bookedQty;
             res.setAvailableQuantity(calculatedAvailable < 0 ? 0 : calculatedAvailable);
 
-            // Dynamic dashboard counter status synchronization
             if ("Maintenance".equalsIgnoreCase(res.getStatus())) {
                 notAvailableResources++;
             } else if (res.getAvailableQuantity() <= 0) {
-                res.setStatus("Not Available"); // Stock khatam hone par hi change hoga
+                res.setStatus("Not Available");
                 notAvailableResources++;
             } else {
                 res.setStatus("Available");
@@ -82,7 +87,7 @@ public class AdminController {
         return "add-resources";
     }
 
-    // 2. Admin Resource Inventory Main Dashboard (Fixed)
+    // 2. Admin Resource Inventory Main Dashboard
     @GetMapping("/dashboardmain")
     public String dashboardmain(HttpSession session, Model model) {
         String username = (String) session.getAttribute("username");
@@ -94,7 +99,6 @@ public class AdminController {
         long notAvailableResources = 0;
 
         for (Resource res : resources) {
-            // ⭐ Strict target standard query implementation
             int bookedQty = allocationRepository.getBookedQuantityByResourceId(res.getResource_id());
             int calculatedAvailable = res.getQuantity() - bookedQty;
             res.setAvailableQuantity(calculatedAvailable < 0 ? 0 : calculatedAvailable);
@@ -186,24 +190,246 @@ public class AdminController {
 
         return "admin-request";
     }
+
     @PostMapping("/request/approve")
     public String approveRequest(@RequestParam("id") int id) {
         Allocation allocation = allocationRepository.findById(id).orElse(null);
         if (allocation != null) {
-            // 1. Move to the new pending state
             allocation.setStatus("APPROVED_PENDING_DELIVERY");
             allocationRepository.save(allocation);
 
-            // 2. Trigger the new verification email
             if (allocation.getUser() != null) {
+                String studentRealEmail = allocation.getUser().getUserEmail();
+                String studentName = allocation.getUser().getUserName();
+                String resourceName = allocation.getResource() != null ? allocation.getResource().getResource_name() : "Resource";
+
+                System.out.println("==================================================");
+                System.out.println("LOG -> Approving Allocation ID #: " + id);
+                System.out.println("LOG -> Extracted Student Name: " + studentName);
+                System.out.println("LOG -> Sending Mail Strictly To: " + studentRealEmail);
+                System.out.println("==================================================");
+
+                // 1. Send Email Notification
                 emailService.sendConfirmationEmail(
-                        allocation.getUser().getUserEmail(),
-                        allocation.getUserName(),
-                        allocation.getResourceName(),
+                        studentRealEmail.trim(),
+                        studentName,
+                        resourceName,
                         allocation.getId()
                 );
+
+                // 2. 🟢 Send Live Mobile SMS via Twilio
+                try {
+                    String testMobileNumber = "+917723883326"; // Hardcoded verified trial number
+                    String smsBody = "Hello " + studentName + ", your request for " + resourceName + " (ID: " + id + ") has been APPROVED by Admin. Kindly collect it from the lab.";
+                    smsService.sendSms(testMobileNumber, smsBody);
+                } catch (Exception e) {
+                    System.err.println("Twilio SMS failed, but app will continue: " + e.getMessage());
+                }
             }
         }
         return "redirect:/admin/admin-request";
+    }
+
+    @PostMapping("/request/verify-return-yes")
+    public String verifyReturnYes(@RequestParam("id") int id) {
+        Allocation allocation = allocationRepository.findById(id).orElse(null);
+
+        if (allocation != null && "RETURN_PENDING_ADMIN".equalsIgnoreCase(allocation.getStatus())) {
+            allocation.setStatus("RETURNED");
+            allocationRepository.save(allocation);
+
+            String resourceName = allocation.getResource() != null ? allocation.getResource().getResource_name() : "Resource";
+            String studentName = allocation.getUser() != null ? allocation.getUser().getUserName() : "Student";
+
+            // 🟢 Safety Check Added: Prevents NullPointerException if database value is null
+            double fineAmount = (allocation.getFineAmount() != null) ? allocation.getFineAmount() : 0.0;
+
+            // ⏱️ Agar dynamic calculations hain toh use karein, nahi toh baseline fallback
+            long lateMinutes = 30;
+
+            if (allocation.getUser() != null) {
+                emailService.sendStatusEmail(
+                        allocation.getUser().getUserEmail(),
+                        studentName,
+                        resourceName,
+                        "RETURNED"
+                );
+            }
+
+            // Resource Request Approve Controller ke andar:
+            try {
+                String approvedSms = "IRP AUTOMATED ALERT\n" +
+                        "▶ REQUEST STATUS: APPROVED\n\n" +
+                        "Dear " + studentName + ",\n" +
+                        "Your allocation request has been verified.\n\n" +
+                        "• Request ID: #" + id + "\n" +
+                        "• Asset Name: " + resourceName + "\n" +
+                        "• Pickup Desk: Central Lab\n\n" +
+                        "Please collect your asset within 24 hours.\n\n" +
+                        "Regards,\n" +
+                        "Operations Desk | IRP";
+
+                smsService.sendSms("+917723883326", approvedSms);
+
+            } catch (Exception e) {
+                System.out.println("\n⚠️ [SMS SIMULATION MODE ACTIVE - REQUEST APPROVED]");
+                System.out.println("To: +917723883326");
+                System.out.println("Message Body:\n" +
+                        "----------------------------------------\n" +
+                        "IRP AUTOMATED ALERT\n" +
+                        "▶ REQUEST STATUS: APPROVED\n\n" +
+                        "Dear " + studentName + ",\n" +
+                        "Your allocation request has been verified.\n\n" +
+                        "• Request ID: #" + id + "\n" +
+                        "• Asset Name: " + resourceName + "\n" +
+                        "• Pickup Desk: Central Lab\n\n" +
+                        "Please collect your asset within 24 hours.\n" +
+                        "----------------------------------------");
+            }
+            String adminEmail = "admin@example.com";
+            emailService.sendStatusEmail(
+                    adminEmail,
+                    "Admin Central Desk",
+                    resourceName + " (Returned by " + studentName + ")",
+                    "SUCCESSFULLY VERIFIED BY SYSTEM"
+            );
+        }
+        return "redirect:/admin/admin-request";
+    }
+
+    @PostMapping("/request/verify-return-no")
+    public String verifyReturnNo(@RequestParam("id") int id) {
+        Allocation allocation = allocationRepository.findById(id).orElse(null);
+        if (allocation != null && "RETURN_PENDING_ADMIN".equalsIgnoreCase(allocation.getStatus())) {
+
+            LocalDateTime now = LocalDateTime.now();
+            String resolvedStatus = "ISSUED";
+
+            if (allocation.getEndTime() != null && now.isAfter(allocation.getEndTime())) {
+                resolvedStatus = "OVERDUE";
+            }
+
+            allocation.setStatus(resolvedStatus);
+            allocationRepository.save(allocation);
+
+            String resourceName = allocation.getResource() != null ? allocation.getResource().getResource_name() : "Resource";
+            String studentName = allocation.getUser() != null ? allocation.getUser().getUserName() : "Student";
+
+            // 🟢 Safety Check Added: Prevents NullPointerException if database value is null
+            double fineAmount = (allocation.getFineAmount() != null) ? allocation.getFineAmount() : 0.0;
+
+            if (allocation.getUser() != null) {
+                emailService.sendStatusEmail(
+                        allocation.getUser().getUserEmail(),
+                        studentName,
+                        resourceName,
+                        "RETURN REJECTED BY ADMIN (STATUS: STILL " + resolvedStatus + ")"
+                );
+            }
+            // Resource Request Reject Controller ke andar:
+            try {
+                String rejectedSms = "IRP AUTOMATED ALERT\n" +
+                        "▶ REQUEST STATUS: REJECTED\n\n" +
+                        "Dear " + studentName + ",\n" +
+                        "We regret to inform you that your resource request has been declined.\n\n" +
+                        "• Request ID: #" + id + "\n" +
+                        "• Asset Name: " + resourceName + "\n" +
+                        "• Status: DENIED BY ADMIN\n\n" +
+                        "Kindly visit the Central Admin Desk for further clarifications.\n\n" +
+                        "Regards,\n" +
+                        "Operations Desk | IRP";
+
+                smsService.sendSms("+917723883326", rejectedSms);
+
+            } catch (Exception e) {
+                System.out.println("\n⚠️ [SMS SIMULATION MODE ACTIVE - REQUEST REJECTED]");
+                System.out.println("To: +917723883326");
+                System.out.println("Message Body:\n" +
+                        "----------------------------------------\n" +
+                        "IRP AUTOMATED ALERT\n" +
+                        "▶ REQUEST STATUS: REJECTED\n\n" +
+                        "Dear " + studentName + ",\n" +
+                        "We regret to inform you that your resource request has been declined.\n\n" +
+                        "• Request ID: #" + id + "\n" +
+                        "• Asset Name: " + resourceName + "\n" +
+                        "• Status: DENIED BY ADMIN\n\n" +
+                        "Kindly visit the Central Admin Desk for further clarifications.\n" +
+                        "----------------------------------------");
+            }
+            String adminEmail = "shevendrachandel@gmail.com";
+            emailService.sendStatusEmail(
+                    adminEmail,
+                    "Admin Central Desk",
+                    resourceName + " (Return Denied for " + studentName + ")",
+                    "REJECTED & REVERTED BACK TO " + resolvedStatus + " STATUS"
+            );
+        }
+        return "redirect:/admin/admin-request";
+    }
+
+    @PostMapping("/request/clear-fine")
+    public String clearFine(@RequestParam("id") int id) {
+        Allocation allocation = allocationRepository.findById(id).orElse(null);
+        if (allocation != null) {
+            allocation.setFineAmount(0.0);
+            allocationRepository.save(allocation);
+        }
+        return "redirect:/admin/admin-request";
+    }
+
+    @PostMapping("/request/reject")
+    public String rejectRequest(@RequestParam("id") int id) {
+        Allocation allocation = allocationRepository.findById(id).orElse(null);
+
+        if (allocation != null) {
+            allocation.setStatus("REJECTED");
+            allocationRepository.save(allocation);
+
+            if (allocation.getUser() != null) {
+                String studentRealEmail = allocation.getUser().getUserEmail();
+                String studentName = allocation.getUser().getUserName();
+                String resourceName = allocation.getResource() != null ? allocation.getResource().getResource_name() : "Resource";
+
+                // 1. Send Email Notification
+                emailService.sendStatusEmail(
+                        studentRealEmail.trim(),
+                        studentName,
+                        resourceName,
+                        "REJECTED"
+                );
+
+                // 2. 🟢 Send Live Mobile SMS via Twilio
+                try {
+                    String testMobileNumber = "+917723883326"; // Hardcoded verified trial number
+                    String smsBody = "Hello " + studentName + ", your allocation request for " + resourceName + " has been REJECTED by Admin.";
+                    smsService.sendSms(testMobileNumber, smsBody);
+                } catch (Exception e) {
+                    System.err.println("Twilio SMS failed, but app will continue: " + e.getMessage());
+                }
+            }
+        }
+        return "redirect:/admin/admin-request";
+    }
+
+    // ====================================================================
+    // 🟢 FIXED PDF REPORT GENERATION ENDPOINT
+    // ====================================================================
+    @GetMapping("/report/download-pdf")
+    @ResponseBody
+    public void downloadPdfReport(HttpServletResponse response) {
+        try {
+            response.setContentType("application/pdf");
+
+            String headerKey = "Content-Disposition";
+            String headerValue = "attachment; filename=irp_allocation_report.pdf";
+            response.setHeader(headerKey, headerValue);
+
+            List<Allocation> allAllocations = allocationRepository.findAll();
+
+            pdfReportService.generateAllocationReport(allAllocations, response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

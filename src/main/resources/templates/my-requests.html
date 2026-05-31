@@ -10,7 +10,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { display: flex; background: #f8fafc; color: #1e293b; min-height: 100vh; }
 
-        /* Sidebar Design (Matching your working Dashboard) */
+        /* Sidebar Design */
         .sidebar {
             width: 260px; background: #0f172a; color: white; padding: 30px 20px;
             position: fixed; height: 100vh; display: flex; flex-direction: column; z-index: 100;
@@ -24,7 +24,7 @@
         .sidebar-footer { border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px; }
         .user-info { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
         .profile-circle { width: 40px; height: 40px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; }
-        .logout-btn { width: 100%; padding: 12px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #f87171; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .logout-btn { width: 100%; padding: 12px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.2); color: #f87171; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
         .logout-btn:hover { background: #ef4444; color: white; }
 
         /* Workspace Main Panel */
@@ -48,12 +48,27 @@
         .res-pill { font-weight: 600; color: #0f172a; background: #f1f5f9; padding: 6px 12px; border-radius: 6px; font-size: 13px; display: inline-block; }
 
         /* Badges System */
-        .status-badge { padding: 6px 14px; border-radius: 99px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; text-transform: capitalize; }
+        .status-badge { padding: 6px 14px; border-radius: 99px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; text-transform: uppercase; }
         .pending-status { background: #fef3c7; color: #d97706; }
+        .delivery-status { background: #e0f2fe; color: #0369a1; }
+        .issued-status { background: #e0e7ff; color: #4338ca; }
         .approved-status { background: #dcfce7; color: #15803d; }
         .rejected-status { background: #fee2e2; color: #b91c1c; }
+        .return-pending-status { background: #ffedf5; color: #b91c1c; }
+        .overdue-status { background: #fef2f2; color: #ef4444; border: 1px dashed #ef4444; }
+
+        /* Action Buttons Grid */
+        .action-flex { display: flex; gap: 8px; justify-content: center; align-items: center; }
+        .btn-yes { background: #22c55e; color: white; padding: 6px 12px; border-radius: 6px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-yes:hover { background: #16a34a; }
+        .btn-no { background: #ef4444; color: white; padding: 6px 12px; border-radius: 6px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-no:hover { background: #dc2626; }
 
         .empty-view { text-align: center; padding: 60px 40px; color: #64748b; }
+
+        /* New DateTime Range Flex Layout */
+        .datetime-range { display: flex; align-items: center; gap: 6px; font-weight: 500; color: #475569; white-space: nowrap; }
+        .datetime-arrow { color: #6366f1; font-weight: 700; font-size: 15px; }
     </style>
 </head>
 <body>
@@ -65,16 +80,17 @@
         <a href="/user/dashboard">
             <span style="margin-right:10px;">📦</span> View Resources
         </a>
-        <a class="active" href="/user/dashboard"> <span style="margin-right:10px;">📝</span> My Requests
+        <a class="active" href="/user/my-requests">
+            <span style="margin-right:10px;">📝</span> My Requests
         </a>
     </nav>
     <div class="sidebar-footer">
         <div class="user-info">
             <div class="profile-circle">
-                <span th:text="${username != null ? username.substring(0,1).toUpperCase() : 'U'}">R</span>
+                <span th:text="${username != null ? username.substring(0,1).toUpperCase() : 'U'}">U</span>
             </div>
             <div style="overflow: hidden;">
-                <p style="font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${username}">ram</p>
+                <p style="font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${username}">User</p>
                 <p style="font-size: 11px; color: #94a3b8;">Student/Faculty</p>
             </div>
         </div>
@@ -96,9 +112,11 @@
                 <th>Resource ID</th>
                 <th>Resource Name</th>
                 <th>Qty</th>
-                <th>Date & Time</th>
+                <th>Date & Time Range</th>
                 <th>Reason</th>
                 <th>Status</th>
+                <th>Fine Amount</th>
+                <th style="text-align: center;">Action</th>
             </tr>
             </thead>
             <tbody>
@@ -108,34 +126,83 @@
                 </td>
 
                 <td>
-                    <div class="res-pill"
-                         th:text="${request.resource != null ? request.resource.resource_name : 'Unknown Resource'}">
-                        Resource Name Loading...
+                    <div class="res-pill" th:text="${request.getResourceName()}">
+                        Resource Name
                     </div>
                 </td>
 
                 <td th:text="${request.quantity}">2</td>
 
                 <td>
-                    <span th:text="${#temporals.format(request.startTime, 'MMM dd, HH:mm')}">May 05, 17:08</span>
-                    <span style="color: #94a3b8; margin: 0 4px;">→</span>
-                    <span th:text="${#temporals.format(request.endTime, 'MMM dd, HH:mm')}">May 05, 17:08</span>
+                    <div class="datetime-range">
+                        <span th:text="${request.startTime != null ? #temporals.format(request.startTime, 'MMM dd, HH:mm') : 'N/A'}">May 30, 16:31</span>
+                        <span class="datetime-arrow">→</span>
+                        <span th:text="${request.endTime != null ? #temporals.format(request.endTime, 'MMM dd, HH:mm') : 'N/A'}">May 30, 17:31</span>
+                    </div>
                 </td>
 
-                <td th:text="${request.reason}">Personal</td>
+                <td th:text="${request.reason != null && request.reason != '' ? request.reason : 'No Reason Provided'}">Reason text</td>
 
                 <td>
-            <span th:class="'status-badge ' +
-                           (${request.status == 'Pending' || request.status == 'pending'} ? 'pending-status' : '') +
-                           (${request.status == 'Approved' || request.status == 'approved'} ? 'approved-status' : '') +
-                           (${request.status == 'Rejected' || request.status == 'rejected'} ? 'rejected-status' : '')"
-                  th:text="${request.status}">
-                Pending
-            </span>
+                    <span th:class="'status-badge ' +
+                                   (${request.status == 'Pending' || request.status == 'PENDING' || request.status == 'pending'} ? 'pending-status' : '') +
+                                   (${request.status == 'Approved' || request.status == 'APPROVED' || request.status == 'RETURNED'} ? 'approved-status' : '') +
+                                   (${request.status == 'Rejected' || request.status == 'REJECTED' || request.status == 'REJECTED_BY_USER'} ? 'rejected-status' : '') +
+                                   (${request.status == 'APPROVED_PENDING_DELIVERY'} ? 'delivery-status' : '') +
+                                   (${request.status == 'ISSUED'} ? 'issued-status' : '') +
+                                   (${request.status == 'RETURN_PENDING_ADMIN'} ? 'return-pending-status' : '') +
+                                   (${request.status == 'OVERDUE'} ? 'overdue-status' : '')"
+                          th:text="${request.status}">
+                        Pending
+                    </span>
+                </td>
+
+                <td>
+                    <span th:if="${request.fineAmount != null && request.fineAmount > 0}"
+                          style="color: #ef4444; font-weight: 700;"
+                          th:text="'₹' + ${request.fineAmount}">₹0.0</span>
+                    <span th:if="${request.fineAmount == null || request.fineAmount == 0}"
+                          style="color: #94a3b8; font-size: 13px; font-style: italic;">₹0.0</span>
+                </td>
+
+                <td style="text-align: center;">
+                    <div th:if="${request.status == 'APPROVED_PENDING_DELIVERY'}" class="action-flex">
+                        <form th:action="@{/user/confirm-receipt/yes}" method="POST" style="margin: 0;">
+                            <input type="hidden" name="id" th:value="${request.id}" />
+                            <button type="submit" class="btn-yes">
+                                <i class="fa-solid fa-check"></i> Yes, Received
+                            </button>
+                        </form>
+                        <form th:action="@{/user/confirm-receipt/no}" method="POST" style="margin: 0;">
+                            <input type="hidden" name="id" th:value="${request.id}" />
+                            <button type="submit" class="btn-no">
+                                <i class="fa-solid fa-xmark"></i> No
+                            </button>
+                        </form>
+                    </div>
+
+                    <div th:if="${request.status == 'ISSUED' || request.status == 'OVERDUE'}" style="margin: 0;">
+                        <form th:action="@{/user/request/return}" method="POST" style="margin: 0;">
+                            <input type="hidden" name="id" th:value="${request.id}" />
+                            <button type="submit" style="background: #f59e0b; color: white; padding: 6px 14px; border-radius: 6px; border:none; font-size:12px; font-weight:600; cursor:pointer; transition: 0.2s;">
+                                <i class="fa-solid fa-arrow-rotate-left"></i> Return Resource
+                            </button>
+                        </form>
+                        <div th:if="${request.status == 'OVERDUE'}" style="margin-top: 6px;">
+                            <span style="color: #ef4444; font-size: 11px; font-weight: 700; text-transform: uppercase; display: block;">⚠️ Fine is Accumulating</span>
+                        </div>
+                    </div>
+
+                    <div th:if="${request.status == 'RETURN_PENDING_ADMIN'}">
+                        <span style="color: #64748b; font-size: 13px; font-style: italic; font-weight: 500;">⏳ Awaiting Admin Check</span>
+                    </div>
+
+                    <div th:if="${request.status != 'ISSUED' && request.status != 'APPROVED_PENDING_DELIVERY' && request.status != 'OVERDUE' && request.status != 'RETURN_PENDING_ADMIN'}">
+                        <span style="color: #94a3b8; font-size: 13px; font-style: italic;">No Action</span>
+                    </div>
                 </td>
             </tr>
             </tbody>
-
         </table>
 
         <div th:if="${#lists.isEmpty(requests)}" class="empty-view">
