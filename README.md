@@ -23,7 +23,7 @@
 - [Sample Data](#sample-data)
 - [Frontend](#frontend)
 - [Booking Flow](#booking-flow)
-- [Screenshots](#screenshots)r)
+- [Screenshots](#screenshots)
 
 ---
 
