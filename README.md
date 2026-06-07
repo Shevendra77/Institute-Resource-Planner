@@ -363,8 +363,224 @@ curl http://localhost:8080/home
 ```
 ---
 
+## 🌱 Sample Data
+
+Import the SQL file to load real institutional inventory and user data:
+
+```bash
+mysql -u root -p IRP < irp_setup_final.sql
+```
+
+### 📊 Dataset Includes
+
+- **5 Departments**
+  - CS Lab
+  - Mechanical Workshop
+  - Seminar Hall
+  - Library Hub
+  - Main Admin Block
+
+- **15 Resources**
+  - Smart Classrooms
+  - Projectors
+  - High-End Laptops
+  - Speakers
+  - Lab Kits
+  - And more
+
+- **12 Accounts**
+  - Pre-configured test accounts for:
+    - Administrator
+    - Staff Members
+    - Students
+
+- **4 Resource Statuses**
+  - AVAILABLE
+  - NOT_AVAILABLE
+  - MAINTENANCE
+  - APPROVED_PENDING_DELIVERY
+
+- **50+ Allocations**
+  - Real-time sample resource requests
+  - Complete reservation logs
+
+- **24 History Logs**
+  - Approved and rejected booking records
+  - User activity tracking
+
+- **10 Mock Emails**
+  - Ready-to-test email confirmation triggers
+  - Database-integrated notification samples
+ 
+---
+
+## 🖥️ Frontend <a name="frontend"></a>
 
 
+This backend is connected to a **plain HTML, CSS, and JavaScript frontend**.
+
+---
+
+### 📁 Project Structure
+
+```text
+bookmyshow-ui/
+├── index.html                  # Main HTML page
+├── css/
+│   └── style.css               # Stylesheet
+├── js/
+│   └── script.js               # Frontend logic
+├── assets/                     # Images, posters, icons
+└── api/
+    └── api.js                  # AJAX / fetch calls to backend APIs
+```
+
+---
+### ▶️ Run Frontend
+
+ Open `index.html` in your browser  
+
+---
+
+### 🌐 Access Application
+
+```
+http://localhost:3306
+```
+
+---
+
+
+## 📊 Resource Allocation Flow
+
+The following workflow illustrates how resources are requested, approved, and allocated within the Institute Resource Planner (IRP) system.
+
+### 1️⃣ Select Resource Category
+
+The user browses and selects a resource category.
+
+⬇️
+
+### 2️⃣ Check Resource Availability
+
+```http
+GET /resources/available
+```
+
+⬇️
+
+### 3️⃣ Submit Allocation Request
+
+The user submits a resource request by specifying the quantity, duration, and purpose.
+
+```http
+POST /user/request/submit
+```
+
+**Request Body**
+
+```json
+{
+  "userId": 12,
+  "resourceId": 3,
+  "quantity": 1,
+  "startTime": "2026-06-10T10:00:00",
+  "reason": "Lab Session"
+}
+```
+
+⬇️
+
+### 4️⃣ Request Appears in Admin Control Center
+
+The submitted request is displayed in the administrator dashboard for review.
+
+⬇️
+
+### 5️⃣ Admin Reviews and Approves Request
+
+```http
+POST /admin/request/approve?id={id}
+```
+
+The request status changes to:
+
+```text
+APPROVED_PENDING_DELIVERY
+```
+
+⬇️
+
+### 6️⃣ Automated Email Notification
+
+✅ Approval confirmation email is automatically sent to the user.
+
+⬇️
+
+### 7️⃣ User Tracks Request Status
+
+Users can monitor the status of their requests through the dashboard.
+
+```http
+GET /user/dashboard
+```
+
+⬇️
+
+### 8️⃣ Reject or Cancel Request (Optional)
+
+If necessary, administrators can reject or cancel an allocation request.
+
+```http
+POST /admin/request/reject?id={id}
+```
+
+---
+
+### 🔄 Workflow Summary
+
+```text
+User
+  │
+  ▼
+Check Availability
+  │
+  ▼
+Submit Request
+  │
+  ▼
+Admin Review
+  │
+  ├── Approve ──► Email Notification ──► User Dashboard
+  │
+  └── Reject ──► Email Notification ──► User Dashboard
+```
+---
+
+## 👨‍💻 Author
+
+**Shevendra77 / Shevendra Singh**
+
+- 🌐 GitHub: [https://github.com/Shevendra77/Institute-Resource-Planner](https://github.com/Shevendra77/Institute-Resource-Planner.git)
+- 📧 Email: shevendrachandel@gmail.com
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** — see the [LICENSE](./LICENSE) file for details.
+--
+## 🙏 Acknowledgements
+
+- Inspired by [**BookMyShow**](https://github.com/Shevendra77/Institute-Resource-Planner) — India's largest entertainment ticketing platform  
+- Built as a **full-stack learning project** with Spring Boot  
+- Special thanks to [**Code for Success platform**] - for guidance and tutorials
+
+- --
+
+
+                                                   ⭐ **Star this repo** if you found it helpful!  
+
+                                                              Made with ❤️ **in India** 🇮🇳
 
 
 
