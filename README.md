@@ -571,16 +571,15 @@ This project is licensed under the **MIT License** — see the [LICENSE](./LICEN
 --
 ## 🙏 Acknowledgements
 
-- Inspired by [**BookMyShow**](https://github.com/Shevendra77/Institute-Resource-Planner) — India's largest entertainment ticketing platform  
+- Inspired by [**Enterprise Resource Planning (ERP)**](https://github.com/Shevendra77/Institute-Resource-Planner) 
 - Built as a **full-stack learning project** with Spring Boot  
-- Special thanks to [**Code for Success platform**] - for guidance and tutorials
 
 - --
 
 
-                                                   ⭐ **Star this repo** if you found it helpful!  
+                                             ⭐ **Star this repo** if you found it helpful!  
 
-                                                              Made with ❤️ **in India** 🇮🇳
+                                                      Made with ❤️ **in India** 🇮🇳
 
 
 
