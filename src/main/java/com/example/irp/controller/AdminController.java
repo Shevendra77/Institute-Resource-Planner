@@ -194,8 +194,19 @@ public class AdminController {
     @PostMapping("/request/approve")
     public String approveRequest(@RequestParam("id") int id) {
         Allocation allocation = allocationRepository.findById(id).orElse(null);
+
         if (allocation != null) {
+            // 1. Status, Approval Time aur Inventory Update
             allocation.setStatus("APPROVED_PENDING_DELIVERY");
+            allocation.setApprovalTime(LocalDateTime.now()); // ✅ Naya: Time track karne ke liye
+
+            // ✅ Naya: Inventory kam karein (Reserve)
+            Resource resource = allocation.getResource();
+            if (resource != null) {
+                resource.setQuantity(resource.getQuantity() - allocation.getQuantity());
+                resourceRepository.save(resource);
+            }
+
             allocationRepository.save(allocation);
 
             if (allocation.getUser() != null) {
@@ -205,8 +216,7 @@ public class AdminController {
 
                 System.out.println("==================================================");
                 System.out.println("LOG -> Approving Allocation ID #: " + id);
-                System.out.println("LOG -> Extracted Student Name: " + studentName);
-                System.out.println("LOG -> Sending Mail Strictly To: " + studentRealEmail);
+                System.out.println("LOG -> Inventory Reduced for Resource: " + resourceName);
                 System.out.println("==================================================");
 
                 // 1. Send Email Notification
@@ -217,13 +227,13 @@ public class AdminController {
                         allocation.getId()
                 );
 
-                // 2. 🟢 Send Live Mobile SMS via Twilio
+                // 2. Send Live Mobile SMS via Twilio
                 try {
-                    String testMobileNumber = "+917723883326"; // Hardcoded verified trial number
-                    String smsBody = "Hello " + studentName + ", your request for " + resourceName + " (ID: " + id + ") has been APPROVED by Admin. Kindly collect it from the lab.";
+                    String testMobileNumber = "+917723883326";
+                    String smsBody = "Hello " + studentName + ", your request for " + resourceName + " (ID: " + id + ") has been APPROVED. Please collect it within 24 hours.";
                     smsService.sendSms(testMobileNumber, smsBody);
                 } catch (Exception e) {
-                    System.err.println("Twilio SMS failed, but app will continue: " + e.getMessage());
+                    System.err.println("Twilio SMS failed: " + e.getMessage());
                 }
             }
         }

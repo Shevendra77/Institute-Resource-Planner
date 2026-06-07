@@ -14,22 +14,26 @@ import java.util.List;
 @Repository
 public interface AllocationRepository extends JpaRepository<Allocation, Integer> {
 
-    // Standard Spring Data JPA Finder for the scheduler tracking
+    // --- UPDATED METHOD FOR SCHEDULER ---
+    // Ab ye 'approvalTime' ko track karega
+    @Query("SELECT a FROM Allocation a WHERE a.status = 'APPROVED_PENDING_DELIVERY' AND a.approvalTime < :limit")
+    List<Allocation> findExpiredByApprovalTime(@Param("limit") LocalDateTime limit);
+
+    // Standard Spring Data JPA Finder
     List<Allocation> findByStatus(String status);
 
     @Query("SELECT a FROM Allocation a WHERE a.userId = :userId")
     List<Allocation> findByUserId(@Param("userId") int userId);
 
-    // Dynamic locked quantity tracker across active business workflows
+    // Dynamic locked quantity tracker
     @Query(value = "SELECT COALESCE(SUM(quantity), 0) FROM allocation " +
             "WHERE resource_id = :resourceId " +
             "AND status IN ('ISSUED', 'RETURN_PENDING_ADMIN', 'APPROVED_PENDING_DELIVERY', 'OVERDUE')", nativeQuery = true)
     int getBookedQuantityByResourceId(@Param("resourceId") int resourceId);
 
-    // Overlapping schedule block validator for bookings
+    // Overlapping schedule block validator
     @Query(value = "SELECT COUNT(*) FROM allocation WHERE resource_id = :resourceId " +
-            "AND status != 'Rejected' " +
-            "AND status != 'REJECTED_BY_USER' " +
+            "AND status NOT IN ('REJECTED', 'REJECTED_BY_USER', 'TIME_EXPIRED') " +
             "AND (:startTime < end_time AND :endTime > start_time)", nativeQuery = true)
     long countOverlappingBookings(@Param("resourceId") int resourceId,
                                   @Param("startTime") LocalDateTime startTime,

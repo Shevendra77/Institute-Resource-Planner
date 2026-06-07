@@ -34,10 +34,23 @@ public class Allocation {
     @Column(name = "end_time")
     private LocalDateTime endTime;
 
+    // ✅ Naya update (Previous code mein ye nahi tha)
+    @Column(name = "approval_time")
+    private LocalDateTime approvalTime;
+
     private String reason;
     private String status;
 
+    // ✅ Naya Getter & Setter (Previous code mein ye nahi tha)
+    public LocalDateTime getApprovalTime() {
+        return approvalTime;
+    }
 
+    public void setApprovalTime(LocalDateTime approvalTime) {
+        this.approvalTime = approvalTime;
+    }
+
+    // Baaki sab purana code waisa ka waisa hi hai...
     public String getUserName() {
         if (user != null) {
             return user.getUserName();
@@ -140,18 +153,14 @@ public class Allocation {
         this.status = status;
     }
 
-
     @Column(name = "fine_amount")
-    private Double fineAmount = 0.0; // Default fine 0.0 rahega
+    private Double fineAmount = 0.0;
 
-    // 🟢 Standard Getter
     public Double getFineAmount() {
         return this.fineAmount;
     }
 
-    // 🟢 Standard Setter
     public void setFineAmount(Double fineAmount) {
         this.fineAmount = fineAmount;
     }
 }
-
