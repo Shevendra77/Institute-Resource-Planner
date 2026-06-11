@@ -22,10 +22,22 @@ public class ResourceController {
     public String resourcePage(Model model) {
         List<Resource> resourceList = resourceRepository.findAll();
 
-        // Loop chalakar runtime par live available quantity calculate karein
+        // Loop chalakar runtime par live available quantity safely calculate karein
         for (Resource res : resourceList) {
+            // Allocation table se live locked/booked quantity uthayein (ISSUED, OVERDUE, etc.)
             int bookedQty = allocationRepository.getBookedQuantityByResourceId(res.getResource_id());
-            res.setAvailableQuantity(res.getQuantity() - bookedQty);
+
+            // Available Quantity calculate karein (Total Stock - Booked Stock)
+            int available = res.getQuantity() - bookedQty;
+
+            // Safety Check: Stock kabhi minus me na dikhe aur total quantity se zyada na ho
+            if (available < 0) {
+                res.setAvailableQuantity(0);
+            } else if (available > res.getQuantity()) {
+                res.setAvailableQuantity(res.getQuantity());
+            } else {
+                res.setAvailableQuantity(available);
+            }
         }
 
         model.addAttribute("resources", resourceList);

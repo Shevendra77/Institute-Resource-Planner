@@ -196,16 +196,12 @@ public class AdminController {
         Allocation allocation = allocationRepository.findById(id).orElse(null);
 
         if (allocation != null) {
-            // 1. Status, Approval Time aur Inventory Update
+            // 1. Status aur Approval Time update karein
             allocation.setStatus("APPROVED_PENDING_DELIVERY");
-            allocation.setApprovalTime(LocalDateTime.now()); // ✅ Naya: Time track karne ke liye
+            allocation.setApprovalTime(LocalDateTime.now());
 
-            // ✅ Naya: Inventory kam karein (Reserve)
-            Resource resource = allocation.getResource();
-            if (resource != null) {
-                resource.setQuantity(resource.getQuantity() - allocation.getQuantity());
-                resourceRepository.save(resource);
-            }
+            // ❌ REMOVED OLD CODE: resource.setQuantity(...) ko yahan se hata diya hai
+            // Ab ye total stock ko permanently minus nahi karega.
 
             allocationRepository.save(allocation);
 
@@ -216,7 +212,7 @@ public class AdminController {
 
                 System.out.println("==================================================");
                 System.out.println("LOG -> Approving Allocation ID #: " + id);
-                System.out.println("LOG -> Inventory Reduced for Resource: " + resourceName);
+                System.out.println("LOG -> Dynamic Allocation Handled via Status Transition");
                 System.out.println("==================================================");
 
                 // 1. Send Email Notification
