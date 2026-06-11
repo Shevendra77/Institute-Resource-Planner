@@ -25,6 +25,7 @@
 - [Booking Flow](#booking-flow)
 - [Screenshots](#screenshots)
 
+
 ---
 
 ## ✨ Key Features <a name="features"></a>
@@ -612,6 +613,80 @@ If necessary, administrators can reject or cancel an allocation request.
 ```http
 POST /admin/request/reject?id={id}
 ```
+
+---
+
+### 🔔 Automated Communication
+
+* **Email Integration:** Automated confirmations, booking alerts, return reminders, and fine notifications using `JavaMail API`.
+* **SMS Alerts:** Real-time notifications sent to users and admin using `Twilio API`.
+* **Dual Notification System:** Ensures important updates are delivered via both email and SMS for reliability.
+
+---
+
+## 📧📲 Email & SMS Notification System
+
+Institute Resource Planner provides a **real-time communication system** using both Email and SMS services.
+
+---
+
+## 👨‍💼 Admin Side Notifications
+
+### 📧 Email Alerts
+- 📩 New resource booking requests
+- ⏰ Late return / overdue alerts
+- 📊 Daily and weekly activity reports
+- 💰 Fine and penalty updates
+
+### 📲 SMS Alerts (Twilio)
+- ⚠️ Instant booking notifications
+- ⏰ Overdue return alerts
+- 📊 Important system activity updates
+
+---
+
+## 👤 User Side Notifications
+
+### 📧 Email Notifications
+- ✅ Booking confirmation email
+- ⏳ Return due reminders
+- 💰 Fine/penalty details
+- 📩 Request approval/rejection updates
+
+### 📲 SMS Notifications (Twilio)
+- ✅ Booking confirmation SMS
+- ⏰ Return reminders before due date
+- ⚠️ Fine alerts for late returns
+- 📩 Instant status updates
+
+---
+
+## 🔄 Notification Flow
+
+```
+User/Admin Action (Book / Return / Approve)
+                ↓
+        Spring Boot Backend
+                ↓
+   Notification Service Layer
+        ↓               ↓
+JavaMail API       Twilio SMS API
+        ↓               ↓
+   Email Inbox     Mobile SMS
+```
+
+---
+
+## 🚀 Key Highlights
+
+- 🔔 Real-time dual notifications
+- 📧 Email + SMS integration
+- 👨‍💼 Admin monitoring support
+- 👤 User instant alerts
+- ⚡ Event-driven Spring Boot architecture
+- 🔐 Reliable communication system for all actions
+
+---
 
 ---
 
