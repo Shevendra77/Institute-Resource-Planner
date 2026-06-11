@@ -371,6 +371,81 @@ Import the SQL file to load real institutional inventory and user data:
 mysql -u root -p IRP < irp_setup_final.sql
 ```
 
+---
+
+## 🖼️ Screenshots <a name="screenshots"></a>
+
+---
+
+### 🔐 Login Page
+![Login](screenshots/login.png)
+
+---
+
+### 🏠 Home Page
+![Home](screenshots/home.png)
+
+---
+
+## 👨‍💼 Admin Panel Screenshots
+
+### 📊 Admin Dashboard
+![Admin Dashboard](screenshots/AdminDash1.png)
+
+### ➕ Add Resource
+![Add Resource](screenshots/AdminAdd.png)
+
+### ✏️ Edit Resource
+![Edit Resource](screenshots/AdminEdit.png)
+
+### 📦 Inventory Management
+![Inventory](screenshots/AdminInve.png)
+
+### 📄 Reports
+![Reports](screenshots/AdminRepo.png)
+
+---
+
+## 👤 User Panel Screenshots
+
+### 📊 User Dashboard
+![User Dashboard](screenshots/UserDash.png)
+
+### 📅 Book Resource
+![Book Resource](screenshots/UserBook.png)
+
+### 📩 Request Status
+![Request Status](screenshots/UserReq.png)
+
+---
+
+## 📝 Authentication
+
+### 🧾 Registration Page
+![Registration](screenshots/registration.png)
+
+---
+
+## 🎥 Demo (Optional)
+
+> You can add your video link here (Google Drive / YouTube)
+
+```
+🎬 Project Demo Video: https://your-link-here
+```
+
+---
+
+## 🚀 Key Highlights
+
+- 🔐 Role-based Access (Admin & User)
+- 📦 Resource Booking System
+- 📊 Admin Inventory Control
+- 📩 User Request Management
+- 🖨️ Reports & Tracking System
+
+---
+
 ### 📊 Dataset Includes
 
 - **5 Departments**
