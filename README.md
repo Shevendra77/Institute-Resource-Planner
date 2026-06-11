@@ -372,22 +372,28 @@ mysql -u root -p IRP < irp_setup_final.sql
 ```
 
 ---
+## 🖼️ Project Screenshots & Flow <a name="screenshots"></a>
 
-## 🖼️ Screenshots <a name="screenshots"></a>
+This section shows the complete flow of the Institute Resource Planner system.
 
 ---
 
-### 🔐 Login Page
+## 🏠 1. Home Page
+![Home Page](screenshots/home.png)
+
+---
+
+## 🔐 2. Authentication System
+
+### 🧾 Registration Page
+![Register](screenshots/registration.png)
+
+### 🔑 Login Page
 ![Login](screenshots/login.png)
 
 ---
 
-### 🏠 Home Page
-![Home](screenshots/home.png)
-
----
-
-## 👨‍💼 Admin Panel Screenshots
+## 👨‍💼 3. Admin Panel
 
 ### 📊 Admin Dashboard
 ![Admin Dashboard](screenshots/AdminDash1.png)
@@ -406,7 +412,7 @@ mysql -u root -p IRP < irp_setup_final.sql
 
 ---
 
-## 👤 User Panel Screenshots
+## 👤 4. User Panel
 
 ### 📊 User Dashboard
 ![User Dashboard](screenshots/UserDash.png)
@@ -419,20 +425,17 @@ mysql -u root -p IRP < irp_setup_final.sql
 
 ---
 
-## 📝 Authentication
+## 🎥 5. Campus Demo Video
 
-### 🧾 Registration Page
-![Registration](screenshots/registration.png)
+👉 Watch full project workflow here:
 
----
+📌 Google Drive / YouTube Link:
+https://your-video-link-here
 
-## 🎥 Demo (Optional)
+OR
 
-> You can add your video link here (Google Drive / YouTube)
+[![Watch Demo](https://img.youtube.com/vi/YOUTUBE_ID/0.jpg)](https://youtu.be/YOUTUBE_ID)
 
-```
-🎬 Project Demo Video: https://your-link-here
-```
 
 ---
 
