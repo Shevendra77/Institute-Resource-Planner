@@ -58,7 +58,6 @@
 | **Spring Boot** | 4.0.3 | Web Framework |
 | **Hibernate/JPA** | 7.2.4 | ORM/Database Layer |
 | **MySQL** | 8.0.41 | Database |
-| **Thymeleaf** | 3.1.3 | Server-side Rendering |
 | **JavaMail API** | 2.1.5 | Automated Email Notifications |
 | **Twilio SDK** | 10.1.0 | SMS Notification System |
 ---
